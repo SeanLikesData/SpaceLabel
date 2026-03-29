@@ -8,7 +8,6 @@ struct SpaceDetailView: View {
     @State private var notes: String = ""
     @State private var colorTag: String? = nil
     @State private var lastEdited: Date? = nil
-    @State private var notesHeight: CGFloat = 150
 
     var body: some View {
         VStack(spacing: 0) {
@@ -80,8 +79,11 @@ struct SpaceDetailView: View {
                     Text("Notes")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    GrowingTextView(text: $notes, contentHeight: $notesHeight)
-                        .frame(height: min(max(notesHeight, 150), 600))
+                    TextField("", text: $notes, axis: .vertical)
+                        .lineLimit(8...30)
+                        .textFieldStyle(.plain)
+                        .font(.body)
+                        .padding(8)
                         .background(
                             RoundedRectangle(cornerRadius: 6)
                                 .fill(Color(nsColor: .controlBackgroundColor))
@@ -90,7 +92,6 @@ struct SpaceDetailView: View {
                             RoundedRectangle(cornerRadius: 6)
                                 .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
 
                     if let lastEdited {
                         Text(lastEdited, style: .relative)
