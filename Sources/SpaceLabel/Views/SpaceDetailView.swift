@@ -8,6 +8,11 @@ struct SpaceDetailView: View {
     @State private var notes: String = ""
     @State private var colorTag: String? = nil
     @State private var lastEdited: Date? = nil
+    @State private var textHeight: CGFloat = 150
+
+    private var editorHeight: CGFloat {
+        min(max(textHeight + 16, 150), 600)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -79,19 +84,33 @@ struct SpaceDetailView: View {
                     Text("Notes")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    TextEditor(text: $notes)
-                        .font(.body)
-                        .frame(minHeight: 150, maxHeight: 600)
-                        .scrollContentBackground(.hidden)
-                        .padding(4)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(Color(nsColor: .controlBackgroundColor))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
-                        )
+                    ZStack(alignment: .topLeading) {
+                        // Hidden text to measure content height
+                        Text(notes.isEmpty ? " " : notes)
+                            .font(.body)
+                            .padding(4)
+                            .padding(.horizontal, 5) // match TextEditor insets
+                            .fixedSize(horizontal: false, vertical: true)
+                            .background(GeometryReader { geo in
+                                Color.clear.preference(key: TextHeightKey.self, value: geo.size.height)
+                            })
+                            .hidden()
+
+                        TextEditor(text: $notes)
+                            .font(.body)
+                            .scrollContentBackground(.hidden)
+                            .padding(4)
+                    }
+                    .frame(height: editorHeight)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color(nsColor: .controlBackgroundColor))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
+                    )
+                    .onPreferenceChange(TextHeightKey.self) { textHeight = $0 }
 
                     if let lastEdited {
                         Text(lastEdited, style: .relative)
@@ -114,6 +133,13 @@ struct SpaceDetailView: View {
         }
         .onDisappear {
             save()
+        }
+    }
+
+    private struct TextHeightKey: PreferenceKey {
+        static var defaultValue: CGFloat = 150
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = nextValue()
         }
     }
 
