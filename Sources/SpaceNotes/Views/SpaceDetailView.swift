@@ -3,30 +3,24 @@ import SwiftUI
 struct SpaceDetailView: View {
     @EnvironmentObject var appState: AppState
     let spaceInfo: SpaceInfo
-    let onBack: () -> Void
 
     @State private var name: String = ""
     @State private var notes: String = ""
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             HStack {
-                Button(action: onBack) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
-                    }
-                    .font(.caption)
-                }
-                .buttonStyle(.plain)
-                .foregroundColor(.accentColor)
+                Text("Desktop \(spaceInfo.index)")
+                    .font(.headline)
 
                 Spacer()
 
-                Text("Desktop \(spaceInfo.index)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Button("Quit") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(.secondary)
+                .font(.caption)
             }
             .padding(10)
 
