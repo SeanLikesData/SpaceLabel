@@ -15,5 +15,8 @@ struct SpaceListView: View {
             }
         }
         .frame(width: 392)
+        .onExitCommand {
+            NSApp.keyWindow?.close()
+        }
     }
 }
