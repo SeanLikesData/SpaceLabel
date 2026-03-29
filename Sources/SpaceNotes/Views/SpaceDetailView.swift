@@ -2,11 +2,12 @@ import SwiftUI
 
 struct SpaceDetailView: View {
     @EnvironmentObject var appState: AppState
-    @Environment(\.dismiss) private var dismiss
     let spaceInfo: SpaceInfo
 
     @State private var name: String = ""
     @State private var notes: String = ""
+    @State private var colorTag: String? = nil
+    @State private var lastEdited: Date? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,6 +38,43 @@ struct SpaceDetailView: View {
                         .onSubmit { save() }
                 }
 
+                // Color tag picker
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Color Tag")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    HStack(spacing: 8) {
+                        // "None" option
+                        Button {
+                            colorTag = nil
+                        } label: {
+                            Circle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 20, height: 20)
+                                .overlay(
+                                    Circle()
+                                        .stroke(colorTag == nil ? Color.primary : Color.clear, lineWidth: 2)
+                                )
+                        }
+                        .buttonStyle(.plain)
+
+                        ForEach(SpaceProfile.availableColors, id: \.name) { item in
+                            Button {
+                                colorTag = item.name
+                            } label: {
+                                Circle()
+                                    .fill(item.color)
+                                    .frame(width: 20, height: 20)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(colorTag == item.name ? Color.primary : Color.clear, lineWidth: 2)
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Notes")
                         .font(.caption)
@@ -54,29 +92,39 @@ struct SpaceDetailView: View {
                             RoundedRectangle(cornerRadius: 6)
                                 .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
                         )
+
+                    if let lastEdited {
+                        Text(lastEdited, style: .relative)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            + Text(" ago")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
             .padding(12)
-
-            Divider()
-
-            HStack {
-                Spacer()
-                Button("Save") { save() }
-                    .keyboardShortcut(.return)
-            }
-            .padding(10)
         }
         .onAppear {
             let profile = appState.store.profile(for: spaceInfo.uuid)
             name = profile.name
             notes = profile.notes
+            colorTag = profile.colorTag
+            lastEdited = profile.lastEdited
+        }
+        .onDisappear {
+            save()
         }
     }
 
     private func save() {
-        let profile = SpaceProfile(id: spaceInfo.uuid, name: name, notes: notes)
+        let profile = SpaceProfile(
+            id: spaceInfo.uuid,
+            name: name,
+            notes: notes,
+            colorTag: colorTag,
+            lastEdited: Date()
+        )
         appState.saveProfile(profile)
-        dismiss()
     }
 }

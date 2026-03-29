@@ -3,6 +3,20 @@ import SwiftUI
 struct HUDView: View {
     let name: String
     let index: Int
+    let notes: String
+    let colorTag: String?
+
+    private var tintColor: Color? {
+        guard let colorTag else { return nil }
+        return SpaceProfile.availableColors.first(where: { $0.name == colorTag })?.color
+    }
+
+    private var notesPreview: String? {
+        let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let lines = trimmed.components(separatedBy: .newlines).prefix(2)
+        return lines.joined(separator: "\n")
+    }
 
     var body: some View {
         HStack(spacing: 14) {
@@ -24,6 +38,13 @@ struct HUDView: View {
                 Text("Desktop \(index)")
                     .font(.system(size: 12))
                     .foregroundColor(.white.opacity(0.6))
+
+                if let notesPreview {
+                    Text(notesPreview)
+                        .font(.system(size: 11))
+                        .foregroundColor(.white.opacity(0.5))
+                        .lineLimit(2)
+                }
             }
 
             Spacer()
@@ -32,8 +53,13 @@ struct HUDView: View {
         .padding(.vertical, 16)
         .frame(width: 320)
         .background(
-            VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+            ZStack {
+                VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
+                if let tintColor {
+                    tintColor.opacity(0.15)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         )
     }
 }

@@ -10,11 +10,17 @@ func CGSGetActiveSpace(_ connection: Int32) -> UInt64
 @_silgen_name("CGSCopyManagedDisplaySpaces")
 func CGSCopyManagedDisplaySpaces(_ connection: Int32) -> CFArray
 
+@_silgen_name("CGSManagedDisplaySetCurrentSpace")
+func CGSManagedDisplaySetCurrentSpace(_ connection: Int32, _ display: CFString, _ space: UInt64)
+
 final class SpaceDetector: ObservableObject {
     @Published private(set) var currentSpaceUUID: String = ""
     @Published private(set) var allSpaces: [SpaceInfo] = []
+    @Published private(set) var removedSpaceUUIDs: Set<String> = []
 
+    private var knownSpaceUUIDs: Set<String> = []
     private var observer: NSObjectProtocol?
+    private var refreshTimer: Timer?
 
     init() {
         refresh()
@@ -25,10 +31,15 @@ final class SpaceDetector: ObservableObject {
         ) { [weak self] _ in
             self?.refresh()
         }
+        // Periodic refresh to detect space add/remove (no notification for these)
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in
+            self?.refresh()
+        }
     }
 
     deinit {
         if let observer { NSWorkspace.shared.notificationCenter.removeObserver(observer) }
+        refreshTimer?.invalidate()
     }
 
     func refresh() {
@@ -68,7 +79,21 @@ final class SpaceDetector: ObservableObject {
             }
         }
 
+        let newUUIDs = Set(spaces.map(\.uuid))
+        if !knownSpaceUUIDs.isEmpty {
+            let removed = knownSpaceUUIDs.subtracting(newUUIDs)
+            if !removed.isEmpty {
+                removedSpaceUUIDs = removed
+            }
+        }
+        knownSpaceUUIDs = newUUIDs
+
         self.allSpaces = spaces
         self.currentSpaceUUID = currentUUID
+    }
+
+    func switchTo(space: SpaceInfo) {
+        let conn = CGSMainConnectionID()
+        CGSManagedDisplaySetCurrentSpace(conn, space.displayID as CFString, UInt64(space.managedID))
     }
 }

@@ -17,6 +17,17 @@ final class SpaceDataStore: ObservableObject {
         persist()
     }
 
+    func removeProfiles(for uuids: Set<String>) {
+        for uuid in uuids {
+            guard let profile = profiles[uuid] else { continue }
+            // Only remove if name AND notes are empty
+            if profile.name.isEmpty && profile.notes.isEmpty {
+                profiles.removeValue(forKey: uuid)
+            }
+        }
+        persist()
+    }
+
     private func load() {
         guard let data = UserDefaults.standard.data(forKey: key),
               let decoded = try? JSONDecoder().decode([String: SpaceProfile].self, from: data)
