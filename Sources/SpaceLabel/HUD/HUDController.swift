@@ -4,15 +4,11 @@ import SwiftUI
 final class HUDController {
     private var panels: [HUDPanel] = []
     private var hideTimer: Timer?
-    private var showGeneration: Int = 0
 
     func show(name: String, index: Int, notes: String = "", colorTag: String? = nil) {
         hideTimer?.invalidate()
-        showGeneration += 1
-        let currentGeneration = showGeneration
 
         let screens = NSScreen.screens
-        // Reuse or create panels to match screen count
         while panels.count < screens.count { panels.append(HUDPanel()) }
         while panels.count > screens.count { panels.removeLast().orderOut(nil) }
 
@@ -22,8 +18,6 @@ final class HUDController {
 
         for (i, screen) in screens.enumerated() {
             let panel = panels[i]
-            // Cancel any in-progress fade animation
-            panel.animator().alphaValue = 1
             let hostView = NSHostingView(rootView: hudView)
             hostView.frame = NSRect(x: 0, y: 0, width: 320, height: panelHeight)
 
@@ -35,22 +29,13 @@ final class HUDController {
         }
 
         hideTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
-            self?.fadeOut(generation: currentGeneration)
+            self?.hide()
         }
     }
 
-    private func fadeOut(generation: Int) {
-        guard generation == showGeneration else { return }
-        let gen = generation
+    private func hide() {
         for panel in panels {
-            NSAnimationContext.runAnimationGroup({ context in
-                context.duration = 0.5
-                panel.animator().alphaValue = 0
-            }, completionHandler: { [weak self] in
-                // Only remove if no newer show() has fired
-                guard let self, gen == self.showGeneration else { return }
-                panel.orderOut(nil)
-            })
+            panel.orderOut(nil)
         }
     }
 }
