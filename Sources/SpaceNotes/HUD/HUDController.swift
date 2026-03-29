@@ -25,13 +25,8 @@ final class HUDController {
             panel.contentView = hostView
             panel.setContentSize(NSSize(width: 320, height: panelHeight))
             panel.centerOn(screen: screen)
-            panel.alphaValue = 0
+            panel.alphaValue = 1
             panel.orderFrontRegardless()
-
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.2
-                panel.animator().alphaValue = 1
-            }
         }
 
         hideTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
