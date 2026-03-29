@@ -1,0 +1,5 @@
+module PrivateCGSBridge [system] {
+    header "PrivateCGSBridge.h"
+    link "CoreGraphics"
+    export *
+}
