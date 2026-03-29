@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct SpaceNotesApp: App {
+struct SpaceLabelApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appState = AppState()
 

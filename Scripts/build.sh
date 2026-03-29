@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_DIR/.build"
-APP_NAME="SpaceNotes"
+APP_NAME="SpaceLabel"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
 
 cd "$PROJECT_DIR"
@@ -36,7 +36,7 @@ RESOURCE_DIR="$(cd "$PATCHED_DIR/lib/swift" && pwd)"
 SWIFT_FILES=()
 while IFS= read -r -d '' file; do
     SWIFT_FILES+=("$file")
-done < <(find Sources/SpaceNotes -name "*.swift" -type f -print0)
+done < <(find Sources/SpaceLabel -name "*.swift" -type f -print0)
 
 echo "Compiling ${#SWIFT_FILES[@]} Swift files..."
 
@@ -73,13 +73,13 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
 <plist version="1.0">
 <dict>
     <key>CFBundleIdentifier</key>
-    <string>com.spacenotes.app</string>
+    <string>com.spacelabel.app</string>
     <key>CFBundleName</key>
-    <string>SpaceNotes</string>
+    <string>SpaceLabel</string>
     <key>CFBundleDisplayName</key>
-    <string>SpaceNotes</string>
+    <string>SpaceLabel</string>
     <key>CFBundleExecutable</key>
-    <string>SpaceNotes</string>
+    <string>SpaceLabel</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleShortVersionString</key>

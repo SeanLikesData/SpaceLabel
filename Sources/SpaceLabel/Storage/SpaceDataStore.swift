@@ -1,7 +1,7 @@
 import Foundation
 
 final class SpaceDataStore: ObservableObject {
-    private let key = "SpaceNotes.profiles"
+    private let key = "SpaceLabel.profiles"
     @Published private(set) var profiles: [String: SpaceProfile] = [:]
 
     init() {

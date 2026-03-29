@@ -6,12 +6,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "SpaceNotes",
+    name: "SpaceLabel",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "SpaceNotes",
-            path: "Sources/SpaceNotes"
+            name: "SpaceLabel",
+            path: "Sources/SpaceLabel"
         ),
     ]
 )

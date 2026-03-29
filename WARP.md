@@ -1,4 +1,4 @@
-# SpaceNotes
+# SpaceLabel
 
 macOS menu bar tool for naming desktops and jotting notes per space.
 
