@@ -13,6 +13,6 @@ struct SpaceListView: View {
                     .padding()
             }
         }
-        .frame(width: 280)
+        .frame(width: 392)
     }
 }

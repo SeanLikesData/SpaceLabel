@@ -81,7 +81,7 @@ struct SpaceDetailView: View {
                         .foregroundColor(.secondary)
                     TextEditor(text: $notes)
                         .font(.body)
-                        .frame(minHeight: 100, maxHeight: 160)
+                        .frame(minHeight: 150, maxHeight: 300)
                         .scrollContentBackground(.hidden)
                         .padding(4)
                         .background(
