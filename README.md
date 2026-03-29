@@ -2,7 +2,15 @@
 
 A lightweight macOS menu bar app for naming and organizing your desktop spaces.
 
-macOS gives you multiple desktop spaces, but no way to label them. SpaceLabel fixes that — name each space, tag it with a color, jot notes, and see where you are with a HUD overlay every time you switch.
+## Why
+
+I built SpaceLabel to reduce friction during AI-driven development. When collaborating with AI on projects, I often work on 3–5 projects simultaneously. Each project gets its own macOS desktop space — a terminal for the dev server, a terminal running Claude Code, a browser showing the app, and whatever other windows that project needs. I switch between projects with a touchpad swipe or `Ctrl + Arrow`, and I have two monitors linked so both screens switch together. While Claude chugs away on one project, I swipe over to a different one and keep going.
+
+It works great, except for one thing: it often takes a few seconds to figure out which project I just switched to. I might have an experiment with a new library on one desktop space, changes to my blog on another, and a research agent I'm building on a third. That moment of figuring out where I am is a small friction, but it happens countless times and small frictions compound.
+
+macOS gives you nothing here. Desktop spaces are just numbers in Mission Control. No labels, no context, no memory of what you were doing there.
+
+SpaceLabel fixes that. It's a menu bar app that lets me name my desktop spaces and shows a HUD overlay when I swipe to one. A translucent panel flashes the project name and a preview of my notes. I swipe, I see "Testing Library" or "Blog" or "Research Agent" and I know where I am.
 
 ## Features
 
