@@ -12,11 +12,21 @@ Uses `swiftc` directly (not SPM) due to CLT toolchain mismatch. The build script
 
 ## Architecture
 
-- **SwiftUI MenuBarExtra** with `.window` style for the popover
-- **CGS private APIs** via `@_silgen_name` for space detection (no C bridge module)
-- **NSPanel** HUD overlay on desktop switch
+- **SwiftUI MenuBarExtra** with `.window` style and view builder label (colored dot + animated text)
+- **CGS private APIs** via `@_silgen_name` for space detection + switching (no C bridge module)
+- **NSPanel** HUD overlay on desktop switch (with notes preview + color tint)
 - **UserDefaults** persistence keyed by space UUID
 - `LSUIElement = true` — menu bar only, no dock icon
+
+## Features
+
+- Auto-save on popover close (no explicit Save button)
+- Color tags (7 colors) shown in menu bar, HUD, and switch list
+- Notes preview (first 2 lines) in HUD overlay
+- Relative timestamp for last edit
+- Quick-switch to other desktops from popover
+- Space add/remove detection with orphan profile cleanup (10s polling)
+- Animated menu bar label with content transition
 
 ## Key Files
 
