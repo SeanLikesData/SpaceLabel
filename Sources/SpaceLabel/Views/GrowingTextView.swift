@@ -12,6 +12,8 @@ struct GrowingTextView: NSViewRepresentable {
         let textView = NSTextView()
         textView.delegate = context.coordinator
         textView.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        textView.isEditable = true
+        textView.isSelectable = true
         textView.isRichText = false
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
