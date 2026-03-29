@@ -105,6 +105,12 @@ struct SpaceDetailView: View {
             }
             .padding(12)
         }
+        .background {
+            if let colorTag,
+               let color = SpaceProfile.availableColors.first(where: { $0.name == colorTag })?.color {
+                color.opacity(0.08)
+            }
+        }
         .onAppear {
             let profile = appState.store.profile(for: spaceInfo.uuid)
             name = profile.name
