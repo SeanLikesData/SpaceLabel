@@ -13,6 +13,12 @@ func CGSCopyManagedDisplaySpaces(_ connection: Int32) -> CFArray
 @_silgen_name("CGSManagedDisplaySetCurrentSpace")
 func CGSManagedDisplaySetCurrentSpace(_ connection: Int32, _ display: CFString, _ space: UInt64)
 
+@_silgen_name("CGSAddWindowsToSpaces")
+func CGSAddWindowsToSpaces(_ connection: Int32, _ windows: NSArray, _ spaces: NSArray)
+
+@_silgen_name("CGSRemoveWindowsFromSpaces")
+func CGSRemoveWindowsFromSpaces(_ connection: Int32, _ windows: NSArray, _ spaces: NSArray)
+
 final class SpaceDetector: ObservableObject {
     @Published private(set) var currentSpaceUUID: String = ""
     @Published private(set) var allSpaces: [SpaceInfo] = []
@@ -21,6 +27,7 @@ final class SpaceDetector: ObservableObject {
     private var knownSpaceUUIDs: Set<String> = []
     private var observer: NSObjectProtocol?
     private var refreshTimer: Timer?
+    private var helperWindow: NSWindow?
 
     init() {
         refresh()
@@ -94,6 +101,41 @@ final class SpaceDetector: ObservableObject {
 
     func switchTo(space: SpaceInfo) {
         let conn = CGSMainConnectionID()
+        let currentSpaceID = CGSGetActiveSpace(conn)
+
+        // Create an invisible helper window anchored on the current space
+        let helper = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 1, height: 1),
+            styleMask: .borderless,
+            backing: .buffered,
+            defer: false
+        )
+        helper.collectionBehavior = [.transient, .ignoresCycle]
+        helper.isOpaque = false
+        helper.backgroundColor = .clear
+        helper.alphaValue = 0
+        helper.orderFrontRegardless()
+        self.helperWindow = helper
+
+        let wid = NSNumber(value: helper.windowNumber)
+        let currentSID = NSNumber(value: currentSpaceID)
+        let targetSID = NSNumber(value: space.managedID)
+
+        // Move helper from current space to target space
+        CGSRemoveWindowsFromSpaces(conn, [wid] as NSArray, [currentSID] as NSArray)
+        CGSAddWindowsToSpaces(conn, [wid] as NSArray, [targetSID] as NSArray)
+
+        // Tell the WindowServer which space is now current
         CGSManagedDisplaySetCurrentSpace(conn, space.displayID as CFString, UInt64(space.managedID))
+
+        // Focus the helper window to trigger the visual space transition
+        helper.orderFrontRegardless()
+        NSApp.activate(ignoringOtherApps: true)
+
+        // Clean up after transition completes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.helperWindow?.close()
+            self?.helperWindow = nil
+        }
     }
 }
