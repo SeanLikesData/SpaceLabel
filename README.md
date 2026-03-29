@@ -25,7 +25,11 @@ SpaceLabel fixes that. It's a menu bar app that lets me name my desktop spaces a
 
 ## Screenshots
 
-> Coming soon
+![HUD overlay showing project name, notes preview, and menu bar label on space switch](screenshots/HUD-view.png)
+
+![Popover with project name, color tags, and notes](screenshots/space-with-popover.png)
+
+![Close-up of the popover with color tint](screenshots/menu-bar-popover.png)
 
 ## Requirements
 
