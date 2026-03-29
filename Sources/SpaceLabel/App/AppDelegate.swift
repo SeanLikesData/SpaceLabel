@@ -9,12 +9,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func registerHotKey() {
-        // Control + ` (backtick, keycode 50)
+        // Control + / (slash, keycode 44)
         let hotKeyID = EventHotKeyID(signature: OSType(0x534C424C), // "SLBL"
                                       id: 1)
         var ref: EventHotKeyRef?
         let modifiers: UInt32 = UInt32(controlKey)
-        RegisterEventHotKey(UInt32(kVK_ANSI_Grave), modifiers, hotKeyID,
+        RegisterEventHotKey(UInt32(kVK_ANSI_Slash), modifiers, hotKeyID,
                             GetApplicationEventTarget(), 0, &ref)
         hotKeyRef = ref
 
