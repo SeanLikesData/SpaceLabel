@@ -21,8 +21,7 @@ final class HUDPanel: NSPanel {
         titlebarAppearsTransparent = true
     }
 
-    func centerOnMainScreen() {
-        guard let screen = NSScreen.main else { return }
+    func centerOn(screen: NSScreen) {
         let screenFrame = screen.visibleFrame
         let x = screenFrame.midX - frame.width / 2
         let y = screenFrame.maxY - frame.height - 80
