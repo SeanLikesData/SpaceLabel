@@ -44,11 +44,12 @@ final class BorderPanel: NSPanel {
 final class BorderOverlayController {
     private var panels: [BorderPanel] = []
 
-    func update(color: NSColor?, thickness: CGFloat, enabled: Bool) {
-        guard enabled, let color, thickness > 0 else {
+    func update(color: NSColor?, thickness: CGFloat, opacity: CGFloat, enabled: Bool) {
+        guard enabled, let baseColor = color, thickness > 0, opacity > 0 else {
             hide()
             return
         }
+        let color = baseColor.withAlphaComponent(opacity)
 
         let screens = NSScreen.screens
         while panels.count < screens.count { panels.append(makePanel()) }
