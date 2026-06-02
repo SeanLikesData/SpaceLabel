@@ -36,7 +36,19 @@ struct SettingsView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Menu bar indicator")
+                    .font(.callout)
+                Picker("Menu bar indicator", selection: $settings.menuBarIndicator) {
+                    ForEach(MenuBarIndicator.allCases) { indicator in
+                        Text(indicator.label).tag(indicator)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                Text("Show the desktop's color as a dot before the name, as an underline beneath it, or not at all.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
             .padding(12)
 
