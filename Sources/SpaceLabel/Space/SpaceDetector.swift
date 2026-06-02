@@ -10,11 +10,6 @@ func CGSGetActiveSpace(_ connection: Int32) -> UInt64
 @_silgen_name("CGSCopyManagedDisplaySpaces")
 func CGSCopyManagedDisplaySpaces(_ connection: Int32) -> CFArray
 
-// Switch a display to a specific space. Private and undocumented; behavior can
-// vary by macOS version, so this powers an experimental click-to-jump feature.
-@_silgen_name("CGSManagedDisplaySetCurrentSpace")
-func CGSManagedDisplaySetCurrentSpace(_ connection: Int32, _ display: CFString, _ space: UInt64)
-
 final class SpaceDetector: ObservableObject {
     @Published private(set) var currentSpaceUUID: String = ""
     @Published private(set) var allSpaces: [SpaceInfo] = []
@@ -42,13 +37,6 @@ final class SpaceDetector: ObservableObject {
     deinit {
         if let observer { NSWorkspace.shared.notificationCenter.removeObserver(observer) }
         refreshTimer?.invalidate()
-    }
-
-    /// Experimental: switch to the given space via a private CGS call.
-    func switchToSpace(_ space: SpaceInfo) {
-        let conn = CGSMainConnectionID()
-        CGSManagedDisplaySetCurrentSpace(conn, space.displayID as CFString, UInt64(space.managedID))
-        refresh()
     }
 
     func refresh() {
