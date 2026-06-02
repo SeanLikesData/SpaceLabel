@@ -3,10 +3,15 @@ import Combine
 import SwiftUI
 
 final class AppState: ObservableObject {
+    /// Set on init so the Carbon hotkey handler in AppDelegate can reach the
+    /// live state without an injected reference.
+    static private(set) var shared: AppState?
+
     let detector = SpaceDetector()
     let store = SpaceDataStore()
     let hudController = HUDController()
     let borderController = BorderOverlayController()
+    let overviewController = OverviewController()
 
     @Published var menuBarLabel: String = "Desktop"
     @Published private(set) var currentProfile: SpaceProfile = SpaceProfile(id: "")
@@ -16,6 +21,8 @@ final class AppState: ObservableObject {
     private var previousSpaceUUID: String = ""
 
     init() {
+        Self.shared = self
+
         detector.$currentSpaceUUID
             .combineLatest(store.$profiles)
             .receive(on: RunLoop.main)
@@ -73,6 +80,29 @@ final class AppState: ObservableObject {
     func saveProfile(_ profile: SpaceProfile) {
         store.save(profile)
         detector.refresh()
+    }
+
+    /// Open or close the all-spaces overview, snapshotting current data.
+    func toggleOverview() {
+        let rows = detector.allSpaces
+            .sorted { $0.index < $1.index }
+            .map { space -> OverviewRow in
+                let profile = store.profile(for: space.uuid)
+                let preview = profile.notes
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .components(separatedBy: .newlines)
+                    .prefix(2)
+                    .joined(separator: "\n")
+                return OverviewRow(
+                    id: space.uuid,
+                    index: space.index,
+                    name: profile.name.isEmpty ? "Desktop \(space.index)" : profile.name,
+                    colorName: profile.colorTag,
+                    notesPreview: preview,
+                    isCurrent: space.uuid == detector.currentSpaceUUID
+                )
+            }
+        overviewController.toggle(rows: rows)
     }
 
     private func updateBorder(colorTag: String?, enabled: Bool, thickness: Double) {

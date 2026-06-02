@@ -22,6 +22,15 @@ struct SpaceDetailView: View {
                 Spacer()
 
                 Button {
+                    appState.toggleOverview()
+                } label: {
+                    Image(systemName: "square.grid.2x2")
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(.secondary)
+                .help("Show all desktops (Control + Shift + /)")
+
+                Button {
                     saveNow()
                     showingSettings = true
                 } label: {
