@@ -15,12 +15,14 @@ SpaceLabel fixes that. It's a menu bar app that lets me name my desktop spaces a
 ## Features
 
 - **Name your spaces** — give each desktop space a project name like "Blog Redesign" or "Tax Prep"
-- **Color tags** — assign one of 7 colors; shown as a colored dot in the menu bar, a tint on the HUD, and in the popover
-- **Notes** — free-form notes per space, auto-saved when the popover closes
+- **Automatic color per space** — each space is assigned one of 7 colors automatically (and you can override it); shown as a colored dot in the menu bar, a tint on the HUD, in the popover, and optionally as a frame around every screen
+- **Desktop border** — an optional colored frame around each screen in the current space's color, so you always see where you are; toggle it on and set its thickness in Settings
+- **Notes** — free-form notes per space; expandable to fill most of the screen with the toggle in the Notes header
+- **All-desktops overview** — `Control + Shift + /` opens a panel listing every desktop with its name, color, and notes preview, highlighting the current one
 - **HUD overlay** — instantly shows the space name, number, notes preview, and color tint when you switch desktops
-- **Global hotkey** — `Control + /` toggles the popover from anywhere
+- **Global hotkeys** — `Control + /` toggles the popover, `Control + Shift + /` opens the overview, from anywhere
 - **Escape to close** — press Escape to save and dismiss
-- **Persistent** — names, notes, and colors survive app restarts and reboots (stored in UserDefaults)
+- **Persistent** — names, notes, and colors survive app restarts and reboots (stored in UserDefaults). Notes autosave while you type, so edits are not lost if the app quits with the popover open
 - **Space lifecycle** — automatically detects when spaces are added or removed and cleans up orphaned profiles
 
 ## Screenshots
@@ -74,8 +76,9 @@ The project uses `swiftc` directly rather than Swift Package Manager due to a bu
 Sources/SpaceLabel/
 ├── App/
 │   ├── SpaceLabelApp.swift    # @main entry, MenuBarExtra with colored dot label
-│   ├── AppState.swift         # Central state: detector + store + HUD via Combine
-│   └── AppDelegate.swift      # Global hotkey registration (Control+/)
+│   ├── AppState.swift         # Central state: detector + store + HUD + border + overview via Combine
+│   ├── AppSettings.swift      # UserDefaults-backed preferences (notes height, border)
+│   └── AppDelegate.swift      # Global hotkey registration (Control+/, Control+Shift+/)
 ├── Space/
 │   ├── SpaceDetector.swift    # CGS private API wrapper for space detection
 │   └── SpaceInfo.swift        # Space data model (UUID, managedID, index, display)
@@ -83,12 +86,17 @@ Sources/SpaceLabel/
 │   ├── SpaceProfile.swift     # Codable model: name, notes, colorTag, lastEdited
 │   └── SpaceDataStore.swift   # UserDefaults persistence layer
 ├── Views/
-│   ├── SpaceListView.swift    # Popover container
-│   └── SpaceDetailView.swift  # Edit name, notes, color tag
-└── HUD/
-    ├── HUDView.swift          # SwiftUI HUD with vibrancy + color tint
-    ├── HUDPanel.swift         # Borderless NSPanel configuration
-    └── HUDController.swift    # Show/hide lifecycle with timer
+│   ├── SpaceListView.swift    # Popover container (detail or settings)
+│   ├── SpaceDetailView.swift  # Edit name, notes, color tag; autosave
+│   └── SettingsView.swift     # Border toggle + thickness
+├── HUD/
+│   ├── HUDView.swift          # SwiftUI HUD with vibrancy + color tint
+│   ├── HUDPanel.swift         # Borderless NSPanel configuration
+│   ├── HUDController.swift    # Show/hide lifecycle with timer
+│   └── BorderOverlay.swift    # Per-screen colored frame panels
+└── Overview/
+    ├── OverviewController.swift # All-spaces panel show/hide
+    └── OverviewView.swift       # SwiftUI list of every desktop
 ```
 
 ## License

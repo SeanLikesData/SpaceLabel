@@ -20,8 +20,11 @@ Uses `swiftc` directly (not SPM) due to CLT toolchain mismatch. The build script
 
 ## Features
 
-- Auto-save on popover close (no explicit Save button)
-- Color tags (7 colors) shown in menu bar and HUD
+- Debounced autosave of notes while typing, plus save on popover close and before quit (no explicit Save button)
+- Color auto-assigned per space (7-color palette, by index), overridable in the picker
+- Optional desktop border: a colored frame per screen in the current space's color; toggle + thickness in Settings
+- Expandable notes editor (toggle in the Notes header), preference persisted
+- All-spaces overview panel via `Control + Shift + /` or the grid button
 - Notes preview (first 2 lines) in HUD overlay
 - Relative timestamp for last edit
 - Space add/remove detection with orphan profile cleanup (10s polling)
@@ -30,8 +33,12 @@ Uses `swiftc` directly (not SPM) due to CLT toolchain mismatch. The build script
 ## Key Files
 
 - `Sources/SpaceLabel/App/SpaceLabelApp.swift` — @main entry point
-- `Sources/SpaceLabel/App/AppState.swift` — central state combining detector + store
+- `Sources/SpaceLabel/App/AppState.swift` — central state combining detector + store + HUD + border + overview; `AppState.shared` for the hotkey handler
+- `Sources/SpaceLabel/App/AppSettings.swift` — UserDefaults-backed preferences
+- `Sources/SpaceLabel/App/AppDelegate.swift` — Carbon hotkeys (Control+/, Control+Shift+/)
 - `Sources/SpaceLabel/Space/SpaceDetector.swift` — CGS space detection + change notifications
-- `Sources/SpaceLabel/Views/SpaceListView.swift` — popover list of desktops
-- `Sources/SpaceLabel/Views/SpaceDetailView.swift` — edit name + notes
-- `Sources/SpaceLabel/HUD/` — floating overlay on space change
+- `Sources/SpaceLabel/Views/SpaceListView.swift` — popover container (detail or settings)
+- `Sources/SpaceLabel/Views/SpaceDetailView.swift` — edit name + notes + color; autosave
+- `Sources/SpaceLabel/Views/SettingsView.swift` — border toggle + thickness
+- `Sources/SpaceLabel/HUD/` — floating overlay on space change + desktop border panels
+- `Sources/SpaceLabel/Overview/` — all-spaces overview panel
