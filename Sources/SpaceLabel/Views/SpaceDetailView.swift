@@ -5,6 +5,7 @@ struct SpaceDetailView: View {
     @EnvironmentObject var appState: AppState
     @ObservedObject private var settings = AppSettings.shared
     let spaceInfo: SpaceInfo
+    @Binding var showingSettings: Bool
 
     @State private var name: String = ""
     @State private var notes: String = ""
@@ -19,6 +20,16 @@ struct SpaceDetailView: View {
                     .font(.headline)
 
                 Spacer()
+
+                Button {
+                    saveNow()
+                    showingSettings = true
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(.secondary)
+                .help("Settings")
 
                 Button("Quit") {
                     save()
@@ -48,20 +59,6 @@ struct SpaceDetailView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     HStack(spacing: 8) {
-                        // "None" option
-                        Button {
-                            colorTag = nil
-                        } label: {
-                            Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 20, height: 20)
-                                .overlay(
-                                    Circle()
-                                        .stroke(colorTag == nil ? Color.primary : Color.clear, lineWidth: 2)
-                                )
-                        }
-                        .buttonStyle(.plain)
-
                         ForEach(SpaceProfile.availableColors, id: \.name) { item in
                             Button {
                                 colorTag = item.name

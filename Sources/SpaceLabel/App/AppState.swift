@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import SwiftUI
 
@@ -5,6 +6,7 @@ final class AppState: ObservableObject {
     let detector = SpaceDetector()
     let store = SpaceDataStore()
     let hudController = HUDController()
+    let borderController = BorderOverlayController()
 
     @Published var menuBarLabel: String = "Desktop"
     @Published private(set) var currentProfile: SpaceProfile = SpaceProfile(id: "")
@@ -19,11 +21,20 @@ final class AppState: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] uuid, profiles in
                 guard let self, !uuid.isEmpty else { return }
-                let profile = profiles[uuid] ?? SpaceProfile(id: uuid)
+                var profile = profiles[uuid] ?? SpaceProfile(id: uuid)
+                let spaceIndex = self.detector.allSpaces.first(where: { $0.uuid == uuid })?.index ?? 0
+
+                // Auto-assign a color the first time a space is seen without one.
+                // Persisting it makes the color stable for that space from then on.
+                if profile.colorTag == nil {
+                    let palette = SpaceProfile.availableColors
+                    profile.colorTag = palette[(max(spaceIndex, 1) - 1) % palette.count].name
+                    self.store.save(profile)
+                }
+
                 self.currentProfile = profile
                 self.currentColorTag = profile.colorTag
 
-                let spaceIndex = self.detector.allSpaces.first(where: { $0.uuid == uuid })?.index ?? 0
                 let label = profile.name.isEmpty ? "Desktop \(spaceIndex)" : profile.name
                 self.menuBarLabel = String(label.prefix(20))
 
@@ -47,10 +58,27 @@ final class AppState: ObservableObject {
                 self.store.removeProfiles(for: removed)
             }
             .store(in: &cancellables)
+
+        // Redraw the desktop border when the current color or border settings change.
+        let settings = AppSettings.shared
+        $currentColorTag
+            .combineLatest(settings.$borderEnabled, settings.$borderThickness)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] colorTag, enabled, thickness in
+                self?.updateBorder(colorTag: colorTag, enabled: enabled, thickness: thickness)
+            }
+            .store(in: &cancellables)
     }
 
     func saveProfile(_ profile: SpaceProfile) {
         store.save(profile)
         detector.refresh()
+    }
+
+    private func updateBorder(colorTag: String?, enabled: Bool, thickness: Double) {
+        let color: NSColor? = colorTag
+            .flatMap { tag in SpaceProfile.availableColors.first(where: { $0.name == tag })?.color }
+            .map { NSColor($0) }
+        borderController.update(color: color, thickness: CGFloat(thickness), enabled: enabled)
     }
 }
