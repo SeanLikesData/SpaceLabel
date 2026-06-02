@@ -5,11 +5,16 @@ struct OverviewView: View {
     @State private var editingID: String?
     let onClose: () -> Void
     let onSave: (OverviewRow) -> Void
+    let onJump: (String) -> Void
 
-    init(rows: [OverviewRow], onClose: @escaping () -> Void, onSave: @escaping (OverviewRow) -> Void) {
+    init(rows: [OverviewRow],
+         onClose: @escaping () -> Void,
+         onSave: @escaping (OverviewRow) -> Void,
+         onJump: @escaping (String) -> Void) {
         _rows = State(initialValue: rows)
         self.onClose = onClose
         self.onSave = onSave
+        self.onJump = onJump
     }
 
     var body: some View {
@@ -35,7 +40,12 @@ struct OverviewView: View {
                             row: $row,
                             isEditing: editingID == row.id,
                             onToggleEdit: { toggleEdit(row.id) },
-                            onSave: onSave
+                            onSave: onSave,
+                            onJump: {
+                                let id = row.id
+                                onClose()
+                                onJump(id)
+                            }
                         )
                     }
                 }
@@ -67,6 +77,7 @@ private struct OverviewRowView: View {
     let isEditing: Bool
     let onToggleEdit: () -> Void
     let onSave: (OverviewRow) -> Void
+    let onJump: () -> Void
 
     private var color: Color? {
         row.colorName.flatMap { name in
@@ -125,6 +136,11 @@ private struct OverviewRowView: View {
                 }
                 .buttonStyle(.plain)
                 .help(isEditing ? "Done" : "Edit this desktop")
+            }
+            // Tap the row (when not editing) to jump to that desktop.
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if !isEditing { onJump() }
             }
 
             if isEditing {

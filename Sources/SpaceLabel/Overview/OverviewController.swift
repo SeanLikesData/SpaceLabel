@@ -38,22 +38,27 @@ final class OverviewController: NSObject, NSWindowDelegate {
     private var panel: OverviewPanel?
     private static let panelSize = NSSize(width: 440, height: 520)
 
-    func toggle(rows: [OverviewRow], onSave: @escaping (OverviewRow) -> Void) {
+    func toggle(rows: [OverviewRow],
+                onSave: @escaping (OverviewRow) -> Void,
+                onJump: @escaping (String) -> Void) {
         if panel != nil {
             close()
         } else {
-            show(rows: rows, onSave: onSave)
+            show(rows: rows, onSave: onSave, onJump: onJump)
         }
     }
 
-    private func show(rows: [OverviewRow], onSave: @escaping (OverviewRow) -> Void) {
+    private func show(rows: [OverviewRow],
+                      onSave: @escaping (OverviewRow) -> Void,
+                      onJump: @escaping (String) -> Void) {
         let panel = OverviewPanel()
         panel.delegate = self
 
         let view = OverviewView(
             rows: rows,
             onClose: { [weak self] in self?.close() },
-            onSave: onSave
+            onSave: onSave,
+            onJump: onJump
         )
         let host = NSHostingView(rootView: view)
         host.frame = NSRect(origin: .zero, size: Self.panelSize)

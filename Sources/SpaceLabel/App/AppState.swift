@@ -97,9 +97,17 @@ final class AppState: ObservableObject {
                     isCurrent: space.uuid == detector.currentSpaceUUID
                 )
             }
-        overviewController.toggle(rows: rows) { [weak self] row in
-            self?.updateProfile(from: row)
-        }
+        overviewController.toggle(
+            rows: rows,
+            onSave: { [weak self] row in self?.updateProfile(from: row) },
+            onJump: { [weak self] uuid in self?.jumpToSpace(uuid) }
+        )
+    }
+
+    /// Experimental: switch to the desktop with the given space UUID.
+    private func jumpToSpace(_ uuid: String) {
+        guard let space = detector.allSpaces.first(where: { $0.uuid == uuid }) else { return }
+        detector.switchToSpace(space)
     }
 
     /// Persist an edit made from the overview, keyed by the row's space UUID.
