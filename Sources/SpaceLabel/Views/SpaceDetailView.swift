@@ -1,7 +1,9 @@
+import AppKit
 import SwiftUI
 
 struct SpaceDetailView: View {
     @EnvironmentObject var appState: AppState
+    @ObservedObject private var settings = AppSettings.shared
     let spaceInfo: SpaceInfo
 
     @State private var name: String = ""
@@ -78,12 +80,25 @@ struct SpaceDetailView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Notes")
-                        .font(.caption)
+                    HStack {
+                        Text("Notes")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Button {
+                            settings.notesExpanded.toggle()
+                        } label: {
+                            Image(systemName: settings.notesExpanded
+                                ? "arrow.down.right.and.arrow.up.left"
+                                : "arrow.up.left.and.arrow.down.right")
+                        }
+                        .buttonStyle(.plain)
                         .foregroundColor(.secondary)
+                        .help(settings.notesExpanded ? "Collapse notes" : "Expand notes")
+                    }
                     TextEditor(text: $notes)
                         .font(.body)
-                        .frame(minHeight: 150, maxHeight: 600)
+                        .frame(minHeight: 150, maxHeight: notesMaxHeight)
                         .scrollContentBackground(.hidden)
                         .padding(4)
                         .background(
@@ -130,6 +145,14 @@ struct SpaceDetailView: View {
         .onDisappear {
             saveNow()
         }
+    }
+
+    /// Notes editor ceiling: a compact fixed height normally, or ~70% of the
+    /// screen height when expanded so it can fill most of the display.
+    private var notesMaxHeight: CGFloat {
+        guard settings.notesExpanded else { return 300 }
+        let screenHeight = NSScreen.main?.visibleFrame.height ?? 900
+        return max(400, screenHeight * 0.7)
     }
 
     /// Cancel any pending debounce and write immediately.
