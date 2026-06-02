@@ -9,38 +9,13 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(notesExpanded, forKey: Keys.notesExpanded) }
     }
 
-    /// Draw a colored frame around each screen in the current space's color.
-    @Published var borderEnabled: Bool {
-        didSet { defaults.set(borderEnabled, forKey: Keys.borderEnabled) }
-    }
-
-    /// Border line width in points.
-    @Published var borderThickness: Double {
-        didSet { defaults.set(borderThickness, forKey: Keys.borderThickness) }
-    }
-
-    /// Border opacity, from 0.1 (faint) to 1.0 (solid).
-    @Published var borderOpacity: Double {
-        didSet { defaults.set(borderOpacity, forKey: Keys.borderOpacity) }
-    }
-
     private let defaults = UserDefaults.standard
 
     private enum Keys {
         static let notesExpanded = "SpaceLabel.notesExpanded"
-        static let borderEnabled = "SpaceLabel.borderEnabled"
-        static let borderThickness = "SpaceLabel.borderThickness"
-        static let borderOpacity = "SpaceLabel.borderOpacity"
     }
 
     private init() {
         notesExpanded = defaults.bool(forKey: Keys.notesExpanded)
-        borderEnabled = defaults.bool(forKey: Keys.borderEnabled)
-        // Default to 4pt the first time (UserDefaults returns 0 for a missing key).
-        let savedThickness = defaults.double(forKey: Keys.borderThickness)
-        borderThickness = savedThickness == 0 ? 4 : savedThickness
-        // Default to fully opaque the first time.
-        let savedOpacity = defaults.double(forKey: Keys.borderOpacity)
-        borderOpacity = savedOpacity == 0 ? 1.0 : savedOpacity
     }
 }

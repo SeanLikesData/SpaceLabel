@@ -37,35 +37,6 @@ struct SettingsView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 16) {
-                Toggle("Frame desktop with space color", isOn: $settings.borderEnabled)
-
-                if settings.borderEnabled {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text("Border thickness")
-                                .font(.callout)
-                            Spacer()
-                            Text("\(Int(settings.borderThickness)) pt")
-                                .font(.callout)
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.borderThickness, in: 1...20, step: 1)
-                    }
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text("Border opacity")
-                                .font(.callout)
-                            Spacer()
-                            Text("\(Int(settings.borderOpacity * 100))%")
-                                .font(.callout)
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $settings.borderOpacity, in: 0.1...1.0)
-                    }
-                    Text("A colored frame appears around every screen in the current desktop's color.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
             }
             .padding(12)
 

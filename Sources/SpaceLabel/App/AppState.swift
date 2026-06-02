@@ -1,4 +1,3 @@
-import AppKit
 import Combine
 import SwiftUI
 
@@ -6,7 +5,6 @@ final class AppState: ObservableObject {
     let detector = SpaceDetector()
     let store = SpaceDataStore()
     let hudController = HUDController()
-    let borderController = BorderOverlayController()
 
     @Published var menuBarLabel: String = "Desktop"
     @Published private(set) var currentProfile: SpaceProfile = SpaceProfile(id: "")
@@ -58,32 +56,10 @@ final class AppState: ObservableObject {
                 self.store.removeProfiles(for: removed)
             }
             .store(in: &cancellables)
-
-        // Redraw the desktop border when the current color or border settings change.
-        let settings = AppSettings.shared
-        $currentColorTag
-            .combineLatest(settings.$borderEnabled, settings.$borderThickness, settings.$borderOpacity)
-            .receive(on: RunLoop.main)
-            .sink { [weak self] colorTag, enabled, thickness, opacity in
-                self?.updateBorder(colorTag: colorTag, enabled: enabled, thickness: thickness, opacity: opacity)
-            }
-            .store(in: &cancellables)
     }
 
     func saveProfile(_ profile: SpaceProfile) {
         store.save(profile)
         detector.refresh()
-    }
-
-    private func updateBorder(colorTag: String?, enabled: Bool, thickness: Double, opacity: Double) {
-        let color: NSColor? = colorTag
-            .flatMap { tag in SpaceProfile.availableColors.first(where: { $0.name == tag })?.color }
-            .map { NSColor($0) }
-        borderController.update(
-            color: color,
-            thickness: CGFloat(thickness),
-            opacity: CGFloat(opacity),
-            enabled: enabled
-        )
     }
 }
