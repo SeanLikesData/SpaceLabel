@@ -88,21 +88,30 @@ final class AppState: ObservableObject {
             .sorted { $0.index < $1.index }
             .map { space -> OverviewRow in
                 let profile = store.profile(for: space.uuid)
-                let preview = profile.notes
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                    .components(separatedBy: .newlines)
-                    .prefix(2)
-                    .joined(separator: "\n")
                 return OverviewRow(
                     id: space.uuid,
                     index: space.index,
-                    name: profile.name.isEmpty ? "Desktop \(space.index)" : profile.name,
+                    name: profile.name,
                     colorName: profile.colorTag,
-                    notesPreview: preview,
+                    notes: profile.notes,
                     isCurrent: space.uuid == detector.currentSpaceUUID
                 )
             }
-        overviewController.toggle(rows: rows)
+        overviewController.toggle(rows: rows) { [weak self] row in
+            self?.updateProfile(from: row)
+        }
+    }
+
+    /// Persist an edit made from the overview, keyed by the row's space UUID.
+    private func updateProfile(from row: OverviewRow) {
+        let profile = SpaceProfile(
+            id: row.id,
+            name: row.name,
+            notes: row.notes,
+            colorTag: row.colorName,
+            lastEdited: Date()
+        )
+        store.save(profile)
     }
 
     private func updateBorder(colorTag: String?, enabled: Bool, thickness: Double, opacity: Double) {

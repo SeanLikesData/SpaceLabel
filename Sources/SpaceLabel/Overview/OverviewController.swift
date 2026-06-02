@@ -2,12 +2,13 @@ import AppKit
 import SwiftUI
 
 /// One row of the all-spaces overview, snapshotted when the panel opens.
+/// Editable fields are `var` so the panel can edit them in place and save back.
 struct OverviewRow: Identifiable {
     let id: String
     let index: Int
-    let name: String
-    let colorName: String?
-    let notesPreview: String
+    var name: String
+    var colorName: String?
+    var notes: String
     let isCurrent: Bool
 }
 
@@ -37,19 +38,23 @@ final class OverviewController: NSObject, NSWindowDelegate {
     private var panel: OverviewPanel?
     private static let panelSize = NSSize(width: 440, height: 520)
 
-    func toggle(rows: [OverviewRow]) {
+    func toggle(rows: [OverviewRow], onSave: @escaping (OverviewRow) -> Void) {
         if panel != nil {
             close()
         } else {
-            show(rows: rows)
+            show(rows: rows, onSave: onSave)
         }
     }
 
-    private func show(rows: [OverviewRow]) {
+    private func show(rows: [OverviewRow], onSave: @escaping (OverviewRow) -> Void) {
         let panel = OverviewPanel()
         panel.delegate = self
 
-        let view = OverviewView(rows: rows, onClose: { [weak self] in self?.close() })
+        let view = OverviewView(
+            rows: rows,
+            onClose: { [weak self] in self?.close() },
+            onSave: onSave
+        )
         let host = NSHostingView(rootView: view)
         host.frame = NSRect(origin: .zero, size: Self.panelSize)
         panel.contentView = host
