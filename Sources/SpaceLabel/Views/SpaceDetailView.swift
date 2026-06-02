@@ -8,6 +8,7 @@ struct SpaceDetailView: View {
     @State private var notes: String = ""
     @State private var colorTag: String? = nil
     @State private var lastEdited: Date? = nil
+    @State private var saveWorkItem: DispatchWorkItem? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -18,6 +19,7 @@ struct SpaceDetailView: View {
                 Spacer()
 
                 Button("Quit") {
+                    save()
                     NSApplication.shared.terminate(nil)
                 }
                 .buttonStyle(.plain)
@@ -118,9 +120,31 @@ struct SpaceDetailView: View {
             colorTag = profile.colorTag
             lastEdited = profile.lastEdited
         }
+        // Debounced autosave so notes are written to disk while editing, not only
+        // when the popover closes. This protects against the app quitting or being
+        // killed with the popover still open.
+        .onChange(of: name) { scheduleSave() }
+        .onChange(of: notes) { scheduleSave() }
+        // Color is a discrete tap — save immediately so the menu bar dot updates fast.
+        .onChange(of: colorTag) { saveNow() }
         .onDisappear {
-            save()
+            saveNow()
         }
+    }
+
+    /// Cancel any pending debounce and write immediately.
+    private func saveNow() {
+        saveWorkItem?.cancel()
+        saveWorkItem = nil
+        save()
+    }
+
+    /// Coalesce rapid edits into a single write ~0.6s after typing stops.
+    private func scheduleSave() {
+        saveWorkItem?.cancel()
+        let work = DispatchWorkItem { save() }
+        saveWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: work)
     }
 
     private func save() {
