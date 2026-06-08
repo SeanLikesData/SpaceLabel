@@ -143,8 +143,11 @@ struct SpaceDetailView: View {
                         .foregroundColor(.secondary)
                         .help(settings.notesExpanded ? "Collapse notes" : "Expand notes")
                     }
-                    TextEditor(text: $notes)
-                        .font(.body)
+                    MarkdownTextEditor(
+                        text: $notes,
+                        fontSize: NSFont.systemFontSize,
+                        rendersMarkdown: settings.markdownRendering
+                    )
                         .frame(minHeight: notesMinHeight, maxHeight: notesMaxHeight)
                         .scrollContentBackground(.hidden)
                         .padding(4)

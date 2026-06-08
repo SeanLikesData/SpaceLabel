@@ -67,16 +67,22 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(popoverSize.rawValue, forKey: Keys.popoverSize) }
     }
 
+    @Published var markdownRendering: Bool {
+        didSet { defaults.set(markdownRendering, forKey: Keys.markdownRendering) }
+    }
+
     private let defaults = UserDefaults.standard
 
     private enum Keys {
         static let notesExpanded = "SpaceLabel.notesExpanded"
         static let menuBarIndicator = "SpaceLabel.menuBarIndicator"
         static let popoverSize = "SpaceLabel.popoverSize"
+        static let markdownRendering = "SpaceLabel.markdownRendering"
     }
 
     private init() {
         notesExpanded = defaults.bool(forKey: Keys.notesExpanded)
+        markdownRendering = defaults.bool(forKey: Keys.markdownRendering)
         // Default to the colored dot (the original behavior).
         let savedIndicator = defaults.string(forKey: Keys.menuBarIndicator)
         menuBarIndicator = savedIndicator.flatMap(MenuBarIndicator.init(rawValue:)) ?? .dot

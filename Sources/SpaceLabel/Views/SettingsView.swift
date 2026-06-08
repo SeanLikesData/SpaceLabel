@@ -85,6 +85,14 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle("Markdown rendering", isOn: $settings.markdownRendering)
+                    .font(.callout)
+                Text("Format markdown syntax in notes (except for the active line).")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
         .padding(12)
     }
