@@ -1,4 +1,6 @@
 import SwiftUI
+import ServiceManagement
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @EnvironmentObject var appState: AppState
@@ -7,6 +9,7 @@ struct SettingsView: View {
 
     @State private var selectedTab = "preferences"
     @State private var projectPendingDeletion: SavedProject? = nil
+    @State private var settingsMessage: String? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -52,49 +55,80 @@ struct SettingsView: View {
 
             Spacer(minLength: 0)
         }
+        .onAppear {
+            settings.launchAtLogin = (SMAppService.mainApp.status == .enabled)
+        }
     }
 
     private var preferencesView: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Popover size")
-                    .font(.callout)
-                Picker("Popover size", selection: $settings.popoverSize) {
-                    ForEach(PopoverSize.allCases) { size in
-                        Text(size.label).tag(size)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Popover size")
+                        .font(.callout)
+                    Picker("Popover size", selection: $settings.popoverSize) {
+                        ForEach(PopoverSize.allCases) { size in
+                            Text(size.label).tag(size)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    Text(settings.popoverSize.dimensionsLabel)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Menu bar indicator")
+                        .font(.callout)
+                    Picker("Menu bar indicator", selection: $settings.menuBarIndicator) {
+                        ForEach(MenuBarIndicator.allCases) { indicator in
+                            Text(indicator.label).tag(indicator)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    Text("Show the desktop's color as a dot before the name, as an underline beneath it, or not at all.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("Markdown rendering", isOn: $settings.markdownRendering)
+                        .font(.callout)
+                    Text("Format markdown syntax in notes (except for the active line).")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("Launch at login", isOn: $settings.launchAtLogin)
+                        .font(.callout)
+                        .onChange(of: settings.launchAtLogin) { _, newValue in
+                            applyLaunchAtLogin(newValue)
+                        }
+                    Text("Start SpaceLabel automatically when you log in.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Data Backup")
+                        .font(.callout)
+                    HStack(spacing: 12) {
+                        Button("Export JSON…") { exportData() }
+                        Button("Import JSON…") { importData() }
+                    }
+                    if let settingsMessage {
+                        Text(settingsMessage)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                Text(settings.popoverSize.dimensionsLabel)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Menu bar indicator")
-                    .font(.callout)
-                Picker("Menu bar indicator", selection: $settings.menuBarIndicator) {
-                    ForEach(MenuBarIndicator.allCases) { indicator in
-                        Text(indicator.label).tag(indicator)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                Text("Show the desktop's color as a dot before the name, as an underline beneath it, or not at all.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                Toggle("Markdown rendering", isOn: $settings.markdownRendering)
-                    .font(.callout)
-                Text("Format markdown syntax in notes (except for the active line).")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(12)
     }
 
     private var projectsView: some View {
@@ -150,6 +184,52 @@ struct SettingsView: View {
                 "\"\(project.name)\" will be removed from saved projects. "
                     + "Spaces using it will return to their local labels."
             )
+        }
+    }
+
+    private func applyLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+            settingsMessage = nil
+        } catch {
+            settings.launchAtLogin = (SMAppService.mainApp.status == .enabled)
+            settingsMessage = "Launch at login could not be changed for this build."
+        }
+    }
+
+    private func exportData() {
+        let panel = NSSavePanel()
+        panel.title = "Export SpaceLabel Data"
+        panel.nameFieldStringValue = "SpaceLabel-Backup.json"
+        panel.allowedContentTypes = [.json]
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try appState.store.exportData(to: url)
+            settingsMessage = "Data exported to \(url.lastPathComponent)."
+        } catch {
+            settingsMessage = "Export failed. \(error.localizedDescription)"
+        }
+    }
+
+    private func importData() {
+        let panel = NSOpenPanel()
+        panel.title = "Import SpaceLabel Data"
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.json]
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try appState.store.importData(from: url)
+            settingsMessage = "Data imported from \(url.lastPathComponent)."
+        } catch {
+            settingsMessage = "Import failed. \(error.localizedDescription)"
         }
     }
 }

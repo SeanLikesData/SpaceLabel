@@ -71,6 +71,10 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(markdownRendering, forKey: Keys.markdownRendering) }
     }
 
+    @Published var launchAtLogin: Bool {
+        didSet { defaults.set(launchAtLogin, forKey: Keys.launchAtLogin) }
+    }
+
     private let defaults = UserDefaults.standard
 
     private enum Keys {
@@ -78,11 +82,13 @@ final class AppSettings: ObservableObject {
         static let menuBarIndicator = "SpaceLabel.menuBarIndicator"
         static let popoverSize = "SpaceLabel.popoverSize"
         static let markdownRendering = "SpaceLabel.markdownRendering"
+        static let launchAtLogin = "SpaceLabel.launchAtLogin"
     }
 
     private init() {
         notesExpanded = defaults.bool(forKey: Keys.notesExpanded)
         markdownRendering = defaults.bool(forKey: Keys.markdownRendering)
+        launchAtLogin = defaults.bool(forKey: Keys.launchAtLogin)
         // Default to the colored dot (the original behavior).
         let savedIndicator = defaults.string(forKey: Keys.menuBarIndicator)
         menuBarIndicator = savedIndicator.flatMap(MenuBarIndicator.init(rawValue:)) ?? .dot

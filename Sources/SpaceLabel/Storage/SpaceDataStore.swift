@@ -123,4 +123,32 @@ final class SpaceDataStore: ObservableObject {
             defaults.set(data, forKey: projectsKey)
         }
     }
+
+    struct ExportFormat: Codable {
+        let profiles: [String: SpaceProfile]?
+        let projects: [String: SavedProject]?
+    }
+
+    func exportData(to url: URL) throws {
+        let export = ExportFormat(profiles: self.profiles, projects: self.projects)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        let data = try encoder.encode(export)
+        try data.write(to: url, options: .atomic)
+    }
+
+    func importData(from url: URL) throws {
+        let data = try Data(contentsOf: url)
+        let imported = try JSONDecoder().decode(ExportFormat.self, from: data)
+        if let importedProfiles = imported.profiles {
+            self.profiles = importedProfiles
+            let encoded = try JSONEncoder().encode(importedProfiles)
+            defaults.set(encoded, forKey: profilesKey)
+        }
+        if let importedProjects = imported.projects {
+            self.projects = importedProjects
+            let encoded = try JSONEncoder().encode(importedProjects)
+            defaults.set(encoded, forKey: projectsKey)
+        }
+    }
 }
