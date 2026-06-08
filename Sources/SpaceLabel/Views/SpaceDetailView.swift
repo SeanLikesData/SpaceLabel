@@ -30,25 +30,6 @@ struct SpaceDetailView: View {
                         .font(.headline)
                 }
 
-                Spacer()
-
-                Button {
-                    saveNow()
-                    showingSettings = true
-                } label: {
-                    Image(systemName: "gearshape")
-                }
-                .buttonStyle(.plain)
-                .foregroundColor(.secondary)
-                .help("Settings")
-
-                Button("Quit") {
-                    save()
-                    NSApplication.shared.terminate(nil)
-                }
-                .buttonStyle(.plain)
-                .foregroundColor(.secondary)
-                .font(.caption)
             }
             .padding(10)
 
@@ -169,6 +150,29 @@ struct SpaceDetailView: View {
                             .foregroundColor(.secondary)
                     }
                 }
+
+                HStack {
+                    Spacer()
+                    
+                    Button("Quit") {
+                        save()
+                        NSApplication.shared.terminate(nil)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.secondary)
+                    .font(.caption)
+
+                    Button {
+                        saveNow()
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.secondary)
+                    .help("Settings")
+                }
+                .padding(.top, 4)
             }
             .padding(12)
         }
