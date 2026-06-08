@@ -22,6 +22,7 @@ Uses `swiftc` directly (not SPM) due to CLT toolchain mismatch. The build script
 
 - Debounced autosave of notes while typing, plus save on popover close and before quit (no explicit Save button)
 - Saved projects can be assigned from a dropdown; project name, notes, and color persist independently of a desktop space
+- Saved projects can be deleted with confirmation; all assignments are removed and spaces return to their local fallback profiles
 - Color auto-assigned per space (7-color palette, by index), overridable in the picker
 - Menu bar indicator setting (none / dot / underline) for how the space color shows by the label; underline renders as a non-template NSImage
 - Popover size setting with Small (300 x 360), Medium (340 x 440), and Large (400 x 560) presets; Medium is the default

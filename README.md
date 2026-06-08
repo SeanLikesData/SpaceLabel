@@ -16,6 +16,7 @@ SpaceLabel fixes that. It's a menu bar app that lets me name my desktop spaces a
 
 - **Name your spaces** — give each desktop space a project name like "Blog Redesign" or "Tax Prep"
 - **Saved projects** — save a label as a reusable project, then assign it to any desktop from a dropdown; its name, notes, and color follow the project
+- **Project management** — delete saved projects with confirmation; assigned spaces return to their local labels
 - **Automatic color per space** — each space is assigned one of 7 colors automatically (and you can override it); shown as a tint on the HUD, in the popover, and in the menu bar
 - **Menu bar indicator** — choose in Settings how the space color shows next to the menu bar label: a colored dot before the name, a colored underline beneath it, or none
 - **Popover sizes** — choose Small (300 x 360), Medium (340 x 440), or Large (400 x 560) in Settings

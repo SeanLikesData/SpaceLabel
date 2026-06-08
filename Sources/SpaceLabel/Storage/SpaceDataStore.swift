@@ -77,6 +77,15 @@ final class SpaceDataStore: ObservableObject {
         persist()
     }
 
+    func deleteProject(_ projectID: String) {
+        projects.removeValue(forKey: projectID)
+        for (spaceUUID, var profile) in profiles where profile.projectID == projectID {
+            profile.projectID = nil
+            profiles[spaceUUID] = profile
+        }
+        persist()
+    }
+
     func removeProfiles(for uuids: Set<String>) {
         for uuid in uuids {
             guard let profile = profiles[uuid] else { continue }

@@ -79,4 +79,9 @@ final class AppState: ObservableObject {
         store.clearSpace(spaceUUID)
         detector.refresh()
     }
+
+    func deleteProject(_ projectID: String) {
+        store.deleteProject(projectID)
+        detector.refresh()
+    }
 }
