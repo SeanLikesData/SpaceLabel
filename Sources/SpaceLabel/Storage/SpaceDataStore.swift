@@ -86,6 +86,13 @@ final class SpaceDataStore: ObservableObject {
         persist()
     }
 
+    func renameProject(_ projectID: String, to newName: String) {
+        guard var project = projects[projectID] else { return }
+        project.name = newName
+        projects[projectID] = project
+        persist()
+    }
+
     func removeProfiles(for uuids: Set<String>) {
         for uuid in uuids {
             guard let profile = profiles[uuid] else { continue }

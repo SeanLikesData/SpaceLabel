@@ -75,6 +75,11 @@ final class AppState: ObservableObject {
         detector.refresh()
     }
 
+    func renameProject(_ projectID: String, to newName: String) {
+        store.renameProject(projectID, to: newName)
+        detector.refresh()
+    }
+
     func clearSpace(_ spaceUUID: String) {
         store.clearSpace(spaceUUID)
         detector.refresh()

@@ -15,13 +15,20 @@ struct SpaceDetailView: View {
     @State private var selectedProjectID: String = ""
     @State private var loadedProjectID: String? = nil
     @State private var isLoadingProfile = false
-    @State private var projectPendingDeletion: SavedProject? = nil
 
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Desktop \(spaceInfo.index)")
-                    .font(.headline)
+                if !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Text(name)
+                        .font(.headline)
+                    Text("• Desktop \(spaceInfo.index)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("Desktop \(spaceInfo.index)")
+                        .font(.headline)
+                }
 
                 Spacer()
 
@@ -62,17 +69,6 @@ struct SpaceDetailView: View {
                             }
                             .labelsHidden()
                             .fixedSize(horizontal: true, vertical: false)
-
-                            if let selectedProject {
-                                Button {
-                                    projectPendingDeletion = selectedProject
-                                } label: {
-                                    Image(systemName: "trash")
-                                }
-                                .buttonStyle(.plain)
-                                .foregroundColor(.red)
-                                .help("Delete \(selectedProject.name)")
-                            }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -105,21 +101,27 @@ struct SpaceDetailView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     HStack(spacing: 8) {
-                        TextField("Name this desktop...", text: $name)
-                            .textFieldStyle(.roundedBorder)
-                            .frame(maxWidth: 210)
-                            .onSubmit { save() }
-
-                        if loadedProjectID == nil {
-                            Button("Save as Project") {
-                                saveAsProject()
-                            }
-                            .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        } else {
+                        if loadedProjectID != nil {
+                            TextField("Name this desktop...", text: $name)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(maxWidth: 210)
+                                .disabled(true)
+                                .foregroundColor(.secondary)
+                                
                             Button("Clear Space") {
                                 clearSpace()
                             }
                             .help("Remove the project and erase this space's local label")
+                        } else {
+                            TextField("Name this desktop...", text: $name)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(maxWidth: 210)
+                                .onSubmit { save() }
+
+                            Button("Save as Project") {
+                                saveAsProject()
+                            }
+                            .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         }
                     }
                 }
@@ -198,26 +200,6 @@ struct SpaceDetailView: View {
         }
         .onDisappear {
             saveNow()
-        }
-        .alert(
-            "Delete Project?",
-            isPresented: Binding(
-                get: { projectPendingDeletion != nil },
-                set: { if !$0 { projectPendingDeletion = nil } }
-            ),
-            presenting: projectPendingDeletion
-        ) { project in
-            Button("Delete", role: .destructive) {
-                deleteProject(project)
-            }
-            Button("Cancel", role: .cancel) {
-                projectPendingDeletion = nil
-            }
-        } message: { project in
-            Text(
-                "\"\(project.name)\" will be removed from saved projects. "
-                    + "Spaces using it will return to their local labels."
-            )
         }
     }
 
@@ -311,14 +293,6 @@ struct SpaceDetailView: View {
         saveWorkItem?.cancel()
         saveWorkItem = nil
         appState.clearSpace(spaceInfo.uuid)
-        loadCurrentProfile()
-    }
-
-    private func deleteProject(_ project: SavedProject) {
-        saveWorkItem?.cancel()
-        saveWorkItem = nil
-        projectPendingDeletion = nil
-        appState.deleteProject(project.id)
         loadCurrentProfile()
     }
 
