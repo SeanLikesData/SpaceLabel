@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SpaceListView: View {
     @EnvironmentObject var appState: AppState
+    @ObservedObject private var settings = AppSettings.shared
     @State private var showingSettings = false
 
     var body: some View {
@@ -17,7 +18,12 @@ struct SpaceListView: View {
                     .padding()
             }
         }
-        .frame(width: 392)
+        .frame(
+            width: settings.popoverSize.width,
+            height: showingSettings || !settings.notesExpanded
+                ? settings.popoverSize.height
+                : nil
+        )
         .onExitCommand {
             NSApp.keyWindow?.close()
         }

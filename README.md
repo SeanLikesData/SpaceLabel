@@ -17,6 +17,7 @@ SpaceLabel fixes that. It's a menu bar app that lets me name my desktop spaces a
 - **Name your spaces** — give each desktop space a project name like "Blog Redesign" or "Tax Prep"
 - **Automatic color per space** — each space is assigned one of 7 colors automatically (and you can override it); shown as a tint on the HUD, in the popover, and in the menu bar
 - **Menu bar indicator** — choose in Settings how the space color shows next to the menu bar label: a colored dot before the name, a colored underline beneath it, or none
+- **Popover sizes** — choose Small (300 x 360), Medium (340 x 440), or Large (400 x 560) in Settings
 - **Notes** — free-form notes per space; expandable to fill most of the screen with the toggle in the Notes header
 - **HUD overlay** — instantly shows the space name, number, notes preview, and color tint when you switch desktops
 - **Global hotkey** — `Control + /` toggles the popover from anywhere
@@ -76,7 +77,7 @@ Sources/SpaceLabel/
 ├── App/
 │   ├── SpaceLabelApp.swift    # @main entry, MenuBarExtra with dot/underline label
 │   ├── AppState.swift         # Central state: detector + store + HUD via Combine
-│   ├── AppSettings.swift      # UserDefaults-backed preferences (notes height, menu bar indicator)
+│   ├── AppSettings.swift      # UserDefaults-backed preferences (popover size, notes height, menu bar indicator)
 │   └── AppDelegate.swift      # Global hotkey registration (Control+/)
 ├── Space/
 │   ├── SpaceDetector.swift    # CGS private API wrapper for space detection
@@ -87,7 +88,7 @@ Sources/SpaceLabel/
 ├── Views/
 │   ├── SpaceListView.swift    # Popover container (detail or settings)
 │   ├── SpaceDetailView.swift  # Edit name, notes, color tag; autosave
-│   └── SettingsView.swift     # Menu bar indicator picker
+│   └── SettingsView.swift     # Popover size and menu bar indicator pickers
 └── HUD/
     ├── HUDView.swift          # SwiftUI HUD with vibrancy + color tint
     ├── HUDPanel.swift         # Borderless NSPanel configuration

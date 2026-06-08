@@ -17,6 +17,39 @@ enum MenuBarIndicator: String, CaseIterable, Identifiable {
     }
 }
 
+/// Fixed dimensions available for the menu bar popover.
+enum PopoverSize: String, CaseIterable, Identifiable {
+    case small
+    case medium
+    case large
+
+    var id: String { rawValue }
+
+    var label: String {
+        rawValue.capitalized
+    }
+
+    var width: CGFloat {
+        switch self {
+        case .small: return 300
+        case .medium: return 340
+        case .large: return 400
+        }
+    }
+
+    var height: CGFloat {
+        switch self {
+        case .small: return 360
+        case .medium: return 440
+        case .large: return 560
+        }
+    }
+
+    var dimensionsLabel: String {
+        "\(Int(width)) x \(Int(height)) points"
+    }
+}
+
 /// User-facing preferences persisted in UserDefaults.
 /// Single shared instance so views and controllers observe the same state.
 final class AppSettings: ObservableObject {
@@ -30,11 +63,16 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(menuBarIndicator.rawValue, forKey: Keys.menuBarIndicator) }
     }
 
+    @Published var popoverSize: PopoverSize {
+        didSet { defaults.set(popoverSize.rawValue, forKey: Keys.popoverSize) }
+    }
+
     private let defaults = UserDefaults.standard
 
     private enum Keys {
         static let notesExpanded = "SpaceLabel.notesExpanded"
         static let menuBarIndicator = "SpaceLabel.menuBarIndicator"
+        static let popoverSize = "SpaceLabel.popoverSize"
     }
 
     private init() {
@@ -42,5 +80,7 @@ final class AppSettings: ObservableObject {
         // Default to the colored dot (the original behavior).
         let savedIndicator = defaults.string(forKey: Keys.menuBarIndicator)
         menuBarIndicator = savedIndicator.flatMap(MenuBarIndicator.init(rawValue:)) ?? .dot
+        let savedPopoverSize = defaults.string(forKey: Keys.popoverSize)
+        popoverSize = savedPopoverSize.flatMap(PopoverSize.init(rawValue:)) ?? .medium
     }
 }

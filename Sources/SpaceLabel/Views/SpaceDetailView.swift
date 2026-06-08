@@ -95,7 +95,7 @@ struct SpaceDetailView: View {
                     }
                     TextEditor(text: $notes)
                         .font(.body)
-                        .frame(minHeight: 150, maxHeight: notesMaxHeight)
+                        .frame(minHeight: notesMinHeight, maxHeight: notesMaxHeight)
                         .scrollContentBackground(.hidden)
                         .padding(4)
                         .background(
@@ -147,9 +147,19 @@ struct SpaceDetailView: View {
     /// Notes editor ceiling: a compact fixed height normally, or ~70% of the
     /// screen height when expanded so it can fill most of the display.
     private var notesMaxHeight: CGFloat {
-        guard settings.notesExpanded else { return 300 }
+        guard settings.notesExpanded else {
+            switch settings.popoverSize {
+            case .small: return 120
+            case .medium: return 220
+            case .large: return 340
+            }
+        }
         let screenHeight = NSScreen.main?.visibleFrame.height ?? 900
         return max(400, screenHeight * 0.7)
+    }
+
+    private var notesMinHeight: CGFloat {
+        settings.popoverSize == .small ? 90 : 150
     }
 
     /// Cancel any pending debounce and write immediately.
