@@ -22,6 +22,7 @@ SpaceLabel fixes that. It's a menu bar app that lets me name my desktop spaces a
 - **Notes** — free-form notes per space; expandable to fill most of the screen with the toggle in the Notes header
 - **HUD overlay** — instantly shows the space name, number, notes preview, and color tint when you switch desktops
 - **Global hotkey** — `Control + /` toggles the popover from anywhere
+- **Persistent popover** — remains visible when you switch to another application or window; click the menu bar label again or press Escape to close it
 - **Escape to close** — press Escape to save and dismiss
 - **Persistent** — names, notes, and colors survive app restarts and reboots (stored in UserDefaults). Notes autosave while you type, so edits are not lost if the app quits with the popover open
 - **Space lifecycle** — automatically detects when spaces are added or removed and cleans up orphaned profiles
@@ -76,10 +77,10 @@ The project uses `swiftc` directly rather than Swift Package Manager due to a bu
 ```
 Sources/SpaceLabel/
 ├── App/
-│   ├── SpaceLabelApp.swift    # @main entry, MenuBarExtra with dot/underline label
+│   ├── SpaceLabelApp.swift    # AppKit @main entry
 │   ├── AppState.swift         # Central state: detector + store + HUD via Combine
 │   ├── AppSettings.swift      # UserDefaults-backed preferences (popover size, notes height, menu bar indicator)
-│   └── AppDelegate.swift      # Global hotkey registration (Control+/)
+│   └── AppDelegate.swift      # Status item, persistent panel, menu label, and hotkey
 ├── Space/
 │   ├── SpaceDetector.swift    # CGS private API wrapper for space detection
 │   └── SpaceInfo.swift        # Space data model (UUID, managedID, index, display)

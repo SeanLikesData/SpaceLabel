@@ -12,7 +12,7 @@ Uses `swiftc` directly (not SPM) due to CLT toolchain mismatch. The build script
 
 ## Architecture
 
-- **SwiftUI MenuBarExtra** with `.window` style and view builder label (colored dot + animated text)
+- **AppKit NSStatusItem + NSPanel** for a popover that remains visible when other applications activate; panel content is SwiftUI
 - **CGS private APIs** via `@_silgen_name` for space detection (no C bridge module)
 - **NSPanel** HUD overlay on desktop switch (with notes preview + color tint)
 - **UserDefaults** persistence keyed by space UUID
@@ -29,14 +29,13 @@ Uses `swiftc` directly (not SPM) due to CLT toolchain mismatch. The build script
 - Notes preview (first 2 lines) in HUD overlay
 - Relative timestamp for last edit
 - Space add/remove detection with orphan profile cleanup (10s polling)
-- Animated menu bar label with content transition
 
 ## Key Files
 
-- `Sources/SpaceLabel/App/SpaceLabelApp.swift` — @main entry point; menu bar label (dot/underline/none)
+- `Sources/SpaceLabel/App/SpaceLabelApp.swift` — AppKit @main entry point
+- `Sources/SpaceLabel/App/AppDelegate.swift` — status item, persistent panel, menu bar label, and global hotkey
 - `Sources/SpaceLabel/App/AppState.swift` — central state combining detector + store + HUD
 - `Sources/SpaceLabel/App/AppSettings.swift` — UserDefaults-backed preferences, including popover size
-- `Sources/SpaceLabel/App/AppDelegate.swift` — Carbon hotkey (Control+/)
 - `Sources/SpaceLabel/Space/SpaceDetector.swift` — CGS space detection + change notifications
 - `Sources/SpaceLabel/Storage/SavedProject.swift` — reusable project data
 - `Sources/SpaceLabel/Storage/SpaceDataStore.swift` — local profiles, saved projects, and space assignments

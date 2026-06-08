@@ -1,5 +1,11 @@
 import SwiftUI
 
+extension Notification.Name {
+    static let spaceLabelPopoverSizeDidChange = Notification.Name(
+        "SpaceLabel.popoverSizeDidChange"
+    )
+}
+
 struct SpaceListView: View {
     @EnvironmentObject var appState: AppState
     @ObservedObject private var settings = AppSettings.shared
@@ -24,8 +30,35 @@ struct SpaceListView: View {
                 ? settings.popoverSize.height
                 : nil
         )
+        .onAppear {
+            notifyPopoverSize()
+        }
+        .onChange(of: showingSettings) {
+            notifyPopoverSize()
+        }
+        .onChange(of: settings.notesExpanded) {
+            notifyPopoverSize()
+        }
+        .onChange(of: settings.popoverSize) {
+            notifyPopoverSize()
+        }
         .onExitCommand {
             NSApp.keyWindow?.close()
         }
+    }
+
+    private func notifyPopoverSize() {
+        let height: CGFloat
+        if showingSettings || !settings.notesExpanded {
+            height = settings.popoverSize.height
+        } else {
+            let visibleHeight = NSScreen.main?.visibleFrame.height ?? 900
+            height = max(settings.popoverSize.height, visibleHeight * 0.85)
+        }
+
+        NotificationCenter.default.post(
+            name: .spaceLabelPopoverSizeDidChange,
+            object: NSSize(width: settings.popoverSize.width, height: height)
+        )
     }
 }
