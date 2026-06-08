@@ -15,11 +15,11 @@ final class AppState: ObservableObject {
 
     init() {
         detector.$currentSpaceUUID
-            .combineLatest(store.$profiles)
+            .combineLatest(store.$profiles, store.$projects)
             .receive(on: RunLoop.main)
-            .sink { [weak self] uuid, profiles in
+            .sink { [weak self] uuid, _, _ in
                 guard let self, !uuid.isEmpty else { return }
-                var profile = profiles[uuid] ?? SpaceProfile(id: uuid)
+                var profile = self.store.profile(for: uuid)
                 let spaceIndex = self.detector.allSpaces.first(where: { $0.uuid == uuid })?.index ?? 0
 
                 // Auto-assign a color the first time a space is seen without one.
@@ -60,6 +60,23 @@ final class AppState: ObservableObject {
 
     func saveProfile(_ profile: SpaceProfile) {
         store.save(profile)
+        detector.refresh()
+    }
+
+    @discardableResult
+    func createProject(from profile: SpaceProfile) -> String {
+        let projectID = store.createProject(from: profile)
+        detector.refresh()
+        return projectID
+    }
+
+    func assignProject(_ projectID: String?, to spaceUUID: String) {
+        store.assignProject(projectID, to: spaceUUID)
+        detector.refresh()
+    }
+
+    func clearSpace(_ spaceUUID: String) {
+        store.clearSpace(spaceUUID)
         detector.refresh()
     }
 }

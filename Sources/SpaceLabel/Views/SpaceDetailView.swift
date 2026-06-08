@@ -12,6 +12,9 @@ struct SpaceDetailView: View {
     @State private var colorTag: String? = nil
     @State private var lastEdited: Date? = nil
     @State private var saveWorkItem: DispatchWorkItem? = nil
+    @State private var selectedProjectID: String = ""
+    @State private var loadedProjectID: String? = nil
+    @State private var isLoadingProfile = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -44,34 +47,65 @@ struct SpaceDetailView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .bottom, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Project")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Picker("Project", selection: $selectedProjectID) {
+                            Text("Local label").tag("")
+                            ForEach(savedProjects) { project in
+                                Text(project.name).tag(project.id)
+                            }
+                        }
+                        .labelsHidden()
+                        .fixedSize(horizontal: true, vertical: false)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Color")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        HStack(spacing: 6) {
+                            ForEach(SpaceProfile.availableColors, id: \.name) { item in
+                                Button {
+                                    colorTag = item.name
+                                } label: {
+                                    Circle()
+                                        .fill(item.color)
+                                        .frame(width: 18, height: 18)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(colorTag == item.name ? Color.primary : Color.clear, lineWidth: 2)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Project Name")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    TextField("Name this desktop...", text: $name)
-                        .textFieldStyle(.roundedBorder)
-                        .onSubmit { save() }
-                }
-
-                // Color tag picker
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Color Tag")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                     HStack(spacing: 8) {
-                        ForEach(SpaceProfile.availableColors, id: \.name) { item in
-                            Button {
-                                colorTag = item.name
-                            } label: {
-                                Circle()
-                                    .fill(item.color)
-                                    .frame(width: 20, height: 20)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(colorTag == item.name ? Color.primary : Color.clear, lineWidth: 2)
-                                    )
+                        TextField("Name this desktop...", text: $name)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(maxWidth: 210)
+                            .onSubmit { save() }
+
+                        if loadedProjectID == nil {
+                            Button("Save as Project") {
+                                saveAsProject()
                             }
-                            .buttonStyle(.plain)
+                            .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        } else {
+                            Button("Clear Space") {
+                                clearSpace()
+                            }
+                            .help("Remove the project and erase this space's local label")
                         }
                     }
                 }
@@ -126,21 +160,36 @@ struct SpaceDetailView: View {
             }
         }
         .onAppear {
-            let profile = appState.store.profile(for: spaceInfo.uuid)
-            name = profile.name
-            notes = profile.notes
-            colorTag = profile.colorTag
-            lastEdited = profile.lastEdited
+            loadCurrentProfile()
         }
         // Debounced autosave so notes are written to disk while editing, not only
         // when the popover closes. This protects against the app quitting or being
         // killed with the popover still open.
-        .onChange(of: name) { scheduleSave() }
-        .onChange(of: notes) { scheduleSave() }
+        .onChange(of: name) {
+            guard !isLoadingProfile else { return }
+            scheduleSave()
+        }
+        .onChange(of: notes) {
+            guard !isLoadingProfile else { return }
+            scheduleSave()
+        }
         // Color is a discrete tap — save immediately so the menu bar dot updates fast.
-        .onChange(of: colorTag) { saveNow() }
+        .onChange(of: colorTag) {
+            guard !isLoadingProfile else { return }
+            saveNow()
+        }
+        .onChange(of: selectedProjectID) {
+            guard !isLoadingProfile else { return }
+            switchProject(to: selectedProjectID.isEmpty ? nil : selectedProjectID)
+        }
         .onDisappear {
             saveNow()
+        }
+    }
+
+    private var savedProjects: [SavedProject] {
+        appState.store.projects.values.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
     }
 
@@ -159,7 +208,7 @@ struct SpaceDetailView: View {
     }
 
     private var notesMinHeight: CGFloat {
-        settings.popoverSize == .small ? 90 : 150
+        settings.popoverSize == .small ? 60 : 150
     }
 
     /// Cancel any pending debounce and write immediately.
@@ -183,8 +232,60 @@ struct SpaceDetailView: View {
             name: name,
             notes: notes,
             colorTag: colorTag,
-            lastEdited: Date()
+            lastEdited: Date(),
+            projectID: loadedProjectID
         )
         appState.saveProfile(profile)
+    }
+
+    private func saveAsProject() {
+        saveWorkItem?.cancel()
+        saveWorkItem = nil
+
+        let profile = SpaceProfile(
+            id: spaceInfo.uuid,
+            name: name,
+            notes: notes,
+            colorTag: colorTag,
+            lastEdited: Date()
+        )
+        let projectID = appState.createProject(from: profile)
+        isLoadingProfile = true
+        loadedProjectID = projectID
+        selectedProjectID = projectID
+        lastEdited = profile.lastEdited
+        DispatchQueue.main.async {
+            isLoadingProfile = false
+        }
+    }
+
+    private func switchProject(to projectID: String?) {
+        saveWorkItem?.cancel()
+        saveWorkItem = nil
+        save()
+
+        appState.assignProject(projectID, to: spaceInfo.uuid)
+        loadCurrentProfile()
+    }
+
+    private func clearSpace() {
+        saveWorkItem?.cancel()
+        saveWorkItem = nil
+        appState.clearSpace(spaceInfo.uuid)
+        loadCurrentProfile()
+    }
+
+    private func loadCurrentProfile() {
+        isLoadingProfile = true
+        let profile = appState.store.profile(for: spaceInfo.uuid)
+        loadedProjectID = profile.projectID
+        selectedProjectID = profile.projectID ?? ""
+        name = profile.name
+        notes = profile.notes
+        colorTag = profile.colorTag
+        lastEdited = profile.lastEdited
+        DispatchQueue.main.async {
+            isLoadingProfile = false
+        }
     }
 }

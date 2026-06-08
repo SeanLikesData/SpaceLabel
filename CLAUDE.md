@@ -21,6 +21,7 @@ Uses `swiftc` directly (not SPM) due to CLT toolchain mismatch. The build script
 ## Features
 
 - Debounced autosave of notes while typing, plus save on popover close and before quit (no explicit Save button)
+- Saved projects can be assigned from a dropdown; project name, notes, and color persist independently of a desktop space
 - Color auto-assigned per space (7-color palette, by index), overridable in the picker
 - Menu bar indicator setting (none / dot / underline) for how the space color shows by the label; underline renders as a non-template NSImage
 - Popover size setting with Small (300 x 360), Medium (340 x 440), and Large (400 x 560) presets; Medium is the default
@@ -37,6 +38,8 @@ Uses `swiftc` directly (not SPM) due to CLT toolchain mismatch. The build script
 - `Sources/SpaceLabel/App/AppSettings.swift` — UserDefaults-backed preferences, including popover size
 - `Sources/SpaceLabel/App/AppDelegate.swift` — Carbon hotkey (Control+/)
 - `Sources/SpaceLabel/Space/SpaceDetector.swift` — CGS space detection + change notifications
+- `Sources/SpaceLabel/Storage/SavedProject.swift` — reusable project data
+- `Sources/SpaceLabel/Storage/SpaceDataStore.swift` — local profiles, saved projects, and space assignments
 - `Sources/SpaceLabel/Views/SpaceListView.swift` — popover container (detail or settings)
 - `Sources/SpaceLabel/Views/SpaceDetailView.swift` — edit name + notes + color; autosave
 - `Sources/SpaceLabel/Views/SettingsView.swift` — popover size and menu bar indicator pickers
