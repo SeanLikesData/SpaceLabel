@@ -65,11 +65,12 @@ struct MarkdownTextEditor: NSViewRepresentable {
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
 
+        let contentSize = scrollView.contentSize
         let textStorage = NSTextStorage()
         let layoutManager = MarkdownLayoutManager()
         let textContainer = NSTextContainer(
             containerSize: NSSize(
-                width: 0,
+                width: contentSize.width,
                 height: CGFloat.greatestFiniteMagnitude
             )
         )
@@ -77,7 +78,10 @@ struct MarkdownTextEditor: NSViewRepresentable {
         layoutManager.addTextContainer(textContainer)
         textStorage.addLayoutManager(layoutManager)
 
-        let textView = NSTextView(frame: .zero, textContainer: textContainer)
+        let textView = NSTextView(
+            frame: NSRect(origin: .zero, size: contentSize),
+            textContainer: textContainer
+        )
         textView.delegate = context.coordinator
         textView.string = text
         textView.isRichText = false
@@ -88,6 +92,15 @@ struct MarkdownTextEditor: NSViewRepresentable {
         textView.isAutomaticTextReplacementEnabled = false
         textView.isAutomaticSpellingCorrectionEnabled = false
         textView.textContainerInset = NSSize(width: 4, height: 2)
+        textView.minSize = NSSize(width: 0, height: contentSize.height)
+        textView.maxSize = NSSize(
+            width: CGFloat.greatestFiniteMagnitude,
+            height: CGFloat.greatestFiniteMagnitude
+        )
+        textView.textContainer?.containerSize = NSSize(
+            width: contentSize.width,
+            height: CGFloat.greatestFiniteMagnitude
+        )
         textView.textContainer?.widthTracksTextView = true
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
@@ -107,6 +120,11 @@ struct MarkdownTextEditor: NSViewRepresentable {
         context.coordinator.parent = self
         guard let textView = context.coordinator.textView else { return }
 
+        var needsAppearanceRefresh = context.coordinator.appearanceSettingsChanged(
+            fontSize: fontSize,
+            rendersMarkdown: rendersMarkdown
+        )
+
         if textView.string != text {
             let selection = textView.selectedRange()
             context.coordinator.isUpdatingText = true
@@ -118,8 +136,12 @@ struct MarkdownTextEditor: NSViewRepresentable {
                 )
             )
             context.coordinator.isUpdatingText = false
+            needsAppearanceRefresh = true
         }
-        context.coordinator.refreshAppearance()
+
+        if needsAppearanceRefresh {
+            context.coordinator.refreshAppearance()
+        }
     }
 
     final class Coordinator: NSObject, NSTextViewDelegate {
@@ -127,18 +149,31 @@ struct MarkdownTextEditor: NSViewRepresentable {
         weak var textView: NSTextView?
         var isUpdatingText = false
         var isUpdatingAppearance = false
+        private var lastFontSize: CGFloat?
+        private var lastRendersMarkdown: Bool?
 
         init(parent: MarkdownTextEditor) {
             self.parent = parent
         }
 
+        func appearanceSettingsChanged(fontSize: CGFloat, rendersMarkdown: Bool) -> Bool {
+            defer {
+                lastFontSize = fontSize
+                lastRendersMarkdown = rendersMarkdown
+            }
+            return lastFontSize != fontSize || lastRendersMarkdown != rendersMarkdown
+        }
+
         func textDidChange(_ notification: Notification) {
             guard let textView, !isUpdatingText, !isUpdatingAppearance else { return }
             parent.text = textView.string
-            refreshAppearance()
+            if parent.rendersMarkdown {
+                refreshAppearance()
+            }
         }
 
         func textViewDidChangeSelection(_ notification: Notification) {
+            guard parent.rendersMarkdown else { return }
             refreshAppearance()
         }
 
